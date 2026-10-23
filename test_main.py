@@ -12,15 +12,27 @@ def test_predict_success(mock_send_task):
     mock_send_task.return_value = mock_task
 
     response = client.post("/predict", json={"text": "This is great!"})
-    assert response.status_code == 200
+    assert response.status_code == 202
+    assert response.headers["location"] == "/result/fake-task-id-123"
     data = response.json()
     assert data["task_id"] == "fake-task-id-123"
     assert data["status"] == "Processing"
     mock_send_task.assert_called_once_with(TASK_ANALYZE_SENTIMENT, args=["This is great!"])
 
-def test_predict_invalid_input():
-    # Enviamos un payload que no cumple con el esquema ReviewRequest
+def test_predict_invalid_input_null():
+    # Enviamos un payload que no cumple con el tipo str
     response = client.post("/predict", json={"text": None})
+    assert response.status_code == 422
+
+def test_predict_invalid_input_empty():
+    # Enviamos texto vacío violando min_length=1
+    response = client.post("/predict", json={"text": ""})
+    assert response.status_code == 422
+
+def test_predict_invalid_input_too_long():
+    # Enviamos texto que supera los 1000 caracteres
+    long_text = "a" * 1001
+    response = client.post("/predict", json={"text": long_text})
     assert response.status_code == 422
 
 @patch("main.AsyncResult")

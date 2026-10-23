@@ -55,7 +55,8 @@ Esto levantará 3 servicios:
     "text": "The battery life on this laptop is incredible!"
   }
   ```
-* **Respuesta (`200 OK`):**
+* **Respuesta (`202 Accepted`):**
+  * **Headers:** `Location: /result/{task_id}`
   ```json
   {
     "task_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",

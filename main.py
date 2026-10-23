@@ -1,6 +1,6 @@
 import os
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Response, status
+from pydantic import BaseModel, Field
 from celery import Celery
 from celery.result import AsyncResult
 from constants import TASK_ANALYZE_SENTIMENT
@@ -18,15 +18,23 @@ celery_app = Celery(
 app = FastAPI(title="Sentiment Analysis API")
 
 class ReviewRequest(BaseModel):
-    text: str
+    text: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Texto de la reseña a analizar (entre 1 y 1000 caracteres)"
+    )
 
-@app.post("/predict")
-def predict(request: ReviewRequest):
-      # Encolamos la tarea en Redis pasando el nombre registrado del worker
+@app.post("/predict", status_code=status.HTTP_202_ACCEPTED)
+def predict(request: ReviewRequest, response: Response):
+    # Encolamos la tarea en Redis pasando el nombre registrado del worker
     task = celery_app.send_task(TASK_ANALYZE_SENTIMENT, args=[request.text])
     
+    # Cabecera estándar REST para Request-Reply asíncrono
+    response.headers["Location"] = f"/result/{task.id}"
+    
     # Respondemos al cliente con el ID para monitorear el progreso
-    return {"task_id": task.id,"status": "Processing"}
+    return {"task_id": task.id, "status": "Processing"}
 
 @app.get("/result/{task_id}")
 def get_result(task_id: str):
