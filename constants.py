@@ -1,0 +1,1 @@
+TASK_ANALYZE_SENTIMENT = "analyze_sentiment_task"
