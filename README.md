@@ -86,6 +86,30 @@ Esto levantará 3 servicios:
       "is_positive": true
     }
   }
+* **Respuesta de tarea no encontrada (`404 Not Found`):**
+  ```json
+  {
+    "detail": "Task 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d not found"
+  }
+  ```
+
+---
+
+### 3. Consultar Salud del Servicio (Healthcheck)
+* **Método:** `GET`
+* **Ruta:** `/health`
+* **Respuesta (`200 OK`):**
+  ```json
+  {
+    "status": "healthy",
+    "redis": "connected"
+  }
+  ```
+* **Respuesta en fallo de infraestructura (`503 Service Unavailable`):**
+  ```json
+  {
+    "detail": "Redis connection failed: Connection refused"
+  }
   ```
 
 ---
